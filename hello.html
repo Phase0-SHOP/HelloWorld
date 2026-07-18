@@ -523,16 +523,10 @@
 
         let isMotionActive = true;
 
-        // --- THREE.JS SYSTEM 1: BACKGROUND PARTICLES & MOUSE VERTICAL TRAIL ---
+        // --- THREE.JS SYSTEM 1: BACKGROUND PARTICLES ---
         let bgScene, bgCamera, bgRenderer, bgParticleSystem;
         let bgParticles = [];
-        const bgParticleCount = 450; // Constant ambient stars
-
-        // Vertical star trail parameters
-        let trailGeometry, trailMaterial, trailPoints;
-        let trailPositions, trailColors;
-        let trailParticles = [];
-        const maxTrailParticles = 1200; // Capacity of trail emitter buffer
+        const bgParticleCount = 1400; // Original dense ambient stars
 
         function initBgThree() {
             const bgContainer = document.getElementById('canvas-container');
@@ -548,7 +542,7 @@
 
             const texture = createParticleTexture();
 
-            // 1. Setup Ambient background stars
+            // 1. Setup Ambient background stars (Reverted to original values)
             const bgGeometry = new THREE.BufferGeometry();
             const bgPositions = new Float32Array(bgParticleCount * 3);
             const bgColors = new Float32Array(bgParticleCount * 3);
@@ -559,11 +553,11 @@
                 const v = Math.random();
                 const theta = u * 2.0 * Math.PI;
                 const phi = Math.acos(2.0 * v - 1.0);
-                const r = 130 + Math.random() * 240;
+                const r = 100 + Math.random() * 150; // Original Sphere distribution radius
 
                 const x = r * Math.sin(phi) * Math.cos(theta);
                 const y = r * Math.sin(phi) * Math.sin(theta);
-                const z = r * Math.cos(phi) - 60;
+                const z = r * Math.cos(phi); // Original Z distribution
 
                 bgPositions[i * 3] = x;
                 bgPositions[i * 3 + 1] = y;
@@ -577,9 +571,9 @@
 
                 bgParticles.push({
                     x: x, y: y, z: z,
-                    speedX: (Math.random() - 0.5) * 0.08,
-                    speedY: (Math.random() - 0.5) * 0.08,
-                    speedZ: (Math.random() - 0.5) * 0.08
+                    speedX: (Math.random() - 0.5) * 0.15, // Original speed
+                    speedY: (Math.random() - 0.5) * 0.15,
+                    speedZ: (Math.random() - 0.5) * 0.15
                 });
             }
 
@@ -587,7 +581,7 @@
             bgGeometry.setAttribute('color', new THREE.BufferAttribute(bgColors, 3));
 
             const bgMaterial = new THREE.PointsMaterial({
-                size: 4.0,
+                size: 3.5, // Original size
                 map: texture,
                 transparent: true,
                 blending: THREE.AdditiveBlending,
@@ -597,29 +591,6 @@
 
             bgParticleSystem = new THREE.Points(bgGeometry, bgMaterial);
             bgScene.add(bgParticleSystem);
-
-            // 2. Setup Vertical star trail particle arrays
-            trailGeometry = new THREE.BufferGeometry();
-            trailPositions = new Float32Array(maxTrailParticles * 3);
-            trailColors = new Float32Array(maxTrailParticles * 3);
-            
-            trailGeometry.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
-            trailGeometry.setAttribute('color', new THREE.BufferAttribute(trailColors, 3));
-
-            const trailMaterial = new THREE.PointsMaterial({
-                size: 5.5, // Slightly larger particles for the trail
-                map: texture,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                vertexColors: true
-            });
-
-            trailPoints = new THREE.Points(trailGeometry, trailMaterial);
-            bgScene.add(trailPoints);
-
-            // Listen for mouse movement to emit trail
-            window.addEventListener('mousemove', handleMouseMoveForTrail);
         }
 
         function createParticleTexture() {
@@ -635,47 +606,7 @@
             return new THREE.CanvasTexture(pCanvas);
         }
 
-        // Logic to emit star columns along the vertical line
-        function handleMouseMoveForTrail(e) {
-            // Unproject mouse coordinates to Z=0 world plane
-            const tempV = new THREE.Vector3(
-                (e.clientX / window.innerWidth) * 2 - 1,
-                -(e.clientY / window.innerHeight) * 2 + 1,
-                0.5
-            );
-            tempV.unproject(bgCamera);
-            const dir = tempV.sub(bgCamera.position).normalize();
-            const distance = -bgCamera.position.z / dir.z; 
-            const mouseWorldPos = bgCamera.position.clone().add(dir.multiplyScalar(distance));
-
-            // Emit vertical columns of stars
-            const activePalette = isDarkMode ? darkParticleColors : lightParticleColors;
-            const count = window.innerWidth < 640 ? 6 : 14; // Emit density
-
-            for (let i = 0; i < count; i++) {
-                if (trailParticles.length >= maxTrailParticles) {
-                    trailParticles.shift(); // Remove oldest
-                }
-
-                // VERTICAL COLUMN SHAPE: Wide Y-spread, tight X-spread
-                const spreadY = (Math.random() - 0.5) * 130; 
-                const spreadX = (Math.random() - 0.5) * 8;   
-
-                const hexColor = activePalette[Math.floor(Math.random() * activePalette.length)];
-                const pColor = new THREE.Color(hexColor);
-
-                trailParticles.push({
-                    x: mouseWorldPos.x + spreadX,
-                    y: mouseWorldPos.y + spreadY,
-                    z: (Math.random() - 0.5) * 15 - 30, // Position slightly behind text plane
-                    vx: (Math.random() - 0.5) * 0.3,
-                    vy: -1.0 - Math.random() * 0.8, // Gravity effect (drift down)
-                    life: 1.0,
-                    decay: 0.012 + Math.random() * 0.012,
-                    color: pColor
-                });
-            }
-        }
+        // Trail emitter logic removed to restore original background
 
         function transitionBgParticlesColors() {
             if (!bgParticleSystem) return;
@@ -929,17 +860,17 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // 1. Ambient Background Stars Physics
+            // 1. Ambient Background Stars Physics (Reverted to original spring physics)
             if (bgParticleSystem) {
                 if (isMotionActive) {
-                    bgAngle += 0.0004;
+                    bgAngle += 0.0012; // Original 자전 속도
                     bgParticleSystem.rotation.y = bgAngle;
-                    bgParticleSystem.rotation.x = bgAngle * 0.3;
+                    bgParticleSystem.rotation.x = bgAngle * 0.5;
                 }
                 
                 const positions = bgParticleSystem.geometry.attributes.position.array;
-                const bgTargetX = (mouseX - window.innerWidth / 2) * 0.42;
-                const bgTargetY = -(mouseY - window.innerHeight / 2) * 0.42;
+                const bgTargetX = (mouseX - window.innerWidth / 2) * 0.35;
+                const bgTargetY = -(mouseY - window.innerHeight / 2) * 0.35;
 
                 for (let i = 0; i < bgParticleCount; i++) {
                     const idx = i * 3;
@@ -949,73 +880,33 @@
                         bgParticles[i].y += bgParticles[i].speedY;
                         bgParticles[i].z += bgParticles[i].speedZ;
 
-                        if (Math.abs(bgParticles[i].x) > 350) bgParticles[i].speedX *= -1;
-                        if (Math.abs(bgParticles[i].y) > 350) bgParticles[i].speedY *= -1;
-                        if (Math.abs(bgParticles[i].z) > 350) bgParticles[i].speedZ *= -1;
+                        // Bound particles inside virtual box
+                        if (Math.abs(bgParticles[i].x) > 280) bgParticles[i].speedX *= -1;
+                        if (Math.abs(bgParticles[i].y) > 280) bgParticles[i].speedY *= -1;
+                        if (Math.abs(bgParticles[i].z) > 280) bgParticles[i].speedZ *= -1;
                     }
 
                     let targetPX = bgParticles[i].x;
                     let targetPY = bgParticles[i].y;
                     let targetPZ = bgParticles[i].z;
 
-                    // Mouse gravity/repel for stars
+                    // Original Mouse repulsion/attract for stars
                     const dx = bgTargetX - positions[idx];
                     const dy = bgTargetY - positions[idx + 1];
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
-                    if (dist < 130) {
-                        const force = (130 - dist) * 0.05;
-                        positions[idx] -= (dx / dist) * force;
-                        positions[idx + 1] -= (dy / dist) * force;
+                    if (dist < 150) {
+                        const force = (150 - dist) * 0.08;
+                        positions[idx] += (dx / dist) * force;
+                        positions[idx + 1] += (dy / dist) * force;
                     }
 
-                    // Elastic restoration
-                    positions[idx] += (targetPX - positions[idx]) * 0.06;
-                    positions[idx + 1] += (targetPY - positions[idx + 1]) * 0.06;
-                    positions[idx + 2] += (targetPZ - positions[idx + 2]) * 0.06;
+                    // Original spring return
+                    positions[idx] += (targetPX - positions[idx]) * 0.05;
+                    positions[idx + 1] += (targetPY - positions[idx + 1]) * 0.05;
+                    positions[idx + 2] += (targetPZ - positions[idx + 2]) * 0.05;
                 }
                 bgParticleSystem.geometry.attributes.position.needsUpdate = true;
-            }
-
-            // 2. Render & Update Vertical Star Trail System
-            if (trailPoints) {
-                const trailPosAttr = trailGeometry.attributes.position.array;
-                const trailColAttr = trailGeometry.attributes.color.array;
-
-                for (let i = 0; i < maxTrailParticles; i++) {
-                    const idx = i * 3;
-                    if (i < trailParticles.length) {
-                        const pt = trailParticles[i];
-                        
-                        // Drift down (Gravity) + velocity steps
-                        pt.y += pt.vy;
-                        pt.x += pt.vx;
-                        pt.life -= pt.decay;
-
-                        trailPosAttr[idx] = pt.x;
-                        trailPosAttr[idx + 1] = pt.y;
-                        trailPosAttr[idx + 2] = pt.z;
-
-                        // Fadeout color blending
-                        trailColAttr[idx] = pt.color.r * pt.life;
-                        trailColAttr[idx + 1] = pt.color.g * pt.life;
-                        trailColAttr[idx + 2] = pt.color.b * pt.life;
-                    } else {
-                        // Push inactive particles out of frame
-                        trailPosAttr[idx] = 9999;
-                        trailPosAttr[idx + 1] = 9999;
-                        trailPosAttr[idx + 2] = 9999;
-                        trailColAttr[idx] = 0;
-                        trailColAttr[idx + 1] = 0;
-                        trailColAttr[idx + 2] = 0;
-                    }
-                }
-
-                // Filter dead particles
-                trailParticles = trailParticles.filter(p => p.life > 0);
-
-                trailGeometry.attributes.position.needsUpdate = true;
-                trailGeometry.attributes.color.needsUpdate = true;
             }
 
             // Render Background systems
