@@ -60,7 +60,7 @@
             transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
         }
 
-        /* 3D Background Canvas */
+        /* 3D Background Canvas (Layered Behind Card) */
         #canvas-container {
             position: absolute;
             top: 0;
@@ -68,9 +68,10 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            pointer-events: none;
         }
 
-        /* Custom Cursor Stalker */
+        /* Custom Cursor Glow */
         .cursor-stalker {
             position: fixed;
             width: 400px;
@@ -97,7 +98,7 @@
             max-width: 580px;
             text-align: center;
             perspective: 1000px;
-            pointer-events: none; /* Let clicks pass to 3D canvas unless on buttons */
+            pointer-events: none;
         }
 
         /* Glassmorphism Card */
@@ -115,7 +116,7 @@
                         border-color var(--transition-speed), 
                         background var(--transition-speed);
             transform-style: preserve-3d;
-            pointer-events: auto; /* Re-enable pointer events for card itself */
+            pointer-events: auto;
         }
 
         .card:hover {
@@ -148,26 +149,33 @@
             border-radius: 2px;
         }
 
+        /* Embedded Text Canvas Wrapper */
         .title-wrapper {
             position: relative;
             margin-bottom: 1.5rem;
-            height: 180px; /* Preserve height for 3D particles to render on top */
+            width: 100%;
+            height: 180px; /* Fixed height container */
             transform: translateZ(60px);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* Hidden Title - serves as placeholder layout */
-        .main-title-placeholder {
-            font-family: var(--font-display);
-            font-size: 4rem;
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-            opacity: 0; /* Fully transparent so 3D particles show instead */
-            pointer-events: none;
-            white-space: pre-line;
+        /* Foreground 3D Text Container (Placed inside card, above glass blur) */
+        #text-canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none; /* Let pointer events pass to actions/card */
+        }
+
+        #text-canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .subtitle {
@@ -322,10 +330,7 @@
                 border-radius: 20px;
             }
             .title-wrapper {
-                height: 120px;
-            }
-            .main-title-placeholder {
-                font-size: 2.8rem;
+                height: 140px;
             }
             .subtitle {
                 font-size: 0.95rem;
@@ -340,7 +345,7 @@
 </head>
 <body>
 
-    <!-- 3D Scene Background & Interactive Area -->
+    <!-- 3D Background Canvas -->
     <div id="canvas-container"></div>
 
     <!-- Custom Cursor Glow -->
@@ -363,9 +368,9 @@
         <div class="card" id="interactiveCard">
             <span class="tagline">Creative Tech Showcase</span>
             
-            <!-- Invisible layout boundary for 3D text alignment -->
+            <!-- Dedicated Wrapper containing WebGL Text Canvas -->
             <div class="title-wrapper" id="titleWrapper">
-                <h1 class="main-title-placeholder">HELLO&#10;WORLD</h1>
+                <div id="text-canvas-container"></div>
             </div>
             
             <p class="subtitle">
@@ -390,7 +395,7 @@
         Designed &amp; Engineered &bull; 2026
     </div>
 
-    <!-- External Libraries (Three.js and Canvas Confetti) -->
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -415,7 +420,7 @@
         }
         animateStalker();
 
-        // 3D Card Tilt Effect parameters
+        // 3D Card Tilt Effect
         const card = document.getElementById('interactiveCard');
         const container = document.querySelector('.app-container');
         let currentTiltX = 0;
@@ -446,62 +451,85 @@
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('light-mode', !isDarkMode);
             
-            // Transition Particle System Colors
-            transitionParticlesColors();
+            transitionBgParticlesColors();
             transitionTextParticlesColors();
         });
 
-        // Three.js 3D Interactive Particles Setup
-        let scene, camera, renderer;
-        
-        // Background particles
-        let bgParticleSystem;
-        let bgParticles = [];
-        let isMotionActive = true;
-        const bgParticleCount = 800;
-        
-        // Text particles
-        let textParticleSystem;
-        let textParticles = [];
-        const textParticleScale = 0.5; // Controls scale in 3D scene
-        
         // Color palettes
         const darkParticleColors = [0x6366f1, 0xec4899, 0xa855f7, 0x3b82f6];
         const lightParticleColors = [0x4f46e5, 0xdb2777, 0x8b5cf6, 0x2563eb];
-        
-        function initThree() {
-            const containerEl = document.getElementById('canvas-container');
-            scene = new THREE.Scene();
+
+        // Global states
+        let isMotionActive = true;
+
+        // --- THREE.JS SYSTEM 1: BACKGROUND PARTICLES ---
+        let bgScene, bgCamera, bgRenderer, bgParticleSystem;
+        let bgParticles = [];
+        const bgParticleCount = 600;
+
+        function initBgThree() {
+            const bgContainer = document.getElementById('canvas-container');
+            bgScene = new THREE.Scene();
             
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.z = 320;
+            bgCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+            bgCamera.position.z = 300;
 
-            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            containerEl.appendChild(renderer.domElement);
+            bgRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            bgRenderer.setSize(window.innerWidth, window.innerHeight);
+            bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            bgContainer.appendChild(bgRenderer.domElement);
 
-            // Create custom particle textures using canvas
-            const pTexture = createParticleTexture();
+            // Generate soft circle texture
+            const texture = createParticleTexture();
 
-            // 1. Initialize Background particles
-            initBackgroundParticles(pTexture);
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(bgParticleCount * 3);
+            const colors = new Float32Array(bgParticleCount * 3);
+            const activeColorPalette = isDarkMode ? darkParticleColors : lightParticleColors;
 
-            // 2. Initialize Text particles after font loads
-            document.fonts.ready.then(() => {
-                initTextParticles(pTexture);
+            for (let i = 0; i < bgParticleCount; i++) {
+                const u = Math.random();
+                const v = Math.random();
+                const theta = u * 2.0 * Math.PI;
+                const phi = Math.acos(2.0 * v - 1.0);
+                const r = 120 + Math.random() * 220;
+
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi) - 50;
+
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+
+                const hexColor = activeColorPalette[Math.floor(Math.random() * activeColorPalette.length)];
+                const color = new THREE.Color(hexColor);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+
+                bgParticles.push({
+                    x: x, y: y, z: z,
+                    speedX: (Math.random() - 0.5) * 0.08,
+                    speedY: (Math.random() - 0.5) * 0.08,
+                    speedZ: (Math.random() - 0.5) * 0.08
+                });
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 4.5,
+                map: texture,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                vertexColors: true
             });
 
-            // Handle Resize
-            window.addEventListener('resize', onWindowResize);
-            
-            // Bind click to canvas container for physics explosion
-            window.addEventListener('click', (e) => {
-                // Ensure the click was not on buttons/card to avoid disrupting UI clicks
-                if (e.target.tagName !== 'BUTTON' && !e.target.closest('.actions')) {
-                    triggerExplosion(e.clientX, e.clientY);
-                }
-            });
+            bgParticleSystem = new THREE.Points(geometry, material);
+            bgScene.add(bgParticleSystem);
         }
 
         function createParticleTexture() {
@@ -517,312 +545,7 @@
             return new THREE.CanvasTexture(pCanvas);
         }
 
-        // --- BACKGROUND PARTICLE SYSTEM ---
-        function initBackgroundParticles(texture) {
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(bgParticleCount * 3);
-            const colors = new Float32Array(bgParticleCount * 3);
-            
-            const activeColorPalette = isDarkMode ? darkParticleColors : lightParticleColors;
-
-            for (let i = 0; i < bgParticleCount; i++) {
-                const u = Math.random();
-                const v = Math.random();
-                const theta = u * 2.0 * Math.PI;
-                const phi = Math.acos(2.0 * v - 1.0);
-                const r = 150 + Math.random() * 250; // Sphere shell radius
-
-                const x = r * Math.sin(phi) * Math.cos(theta);
-                const y = r * Math.sin(phi) * Math.sin(theta);
-                const z = r * Math.cos(phi) - 100; // Push backward
-
-                positions[i * 3] = x;
-                positions[i * 3 + 1] = y;
-                positions[i * 3 + 2] = z;
-
-                const hexColor = activeColorPalette[Math.floor(Math.random() * activeColorPalette.length)];
-                const color = new THREE.Color(hexColor);
-                colors[i * 3] = color.r;
-                colors[i * 3 + 1] = color.g;
-                colors[i * 3 + 2] = color.b;
-
-                bgParticles.push({
-                    x: x, y: y, z: z,
-                    speedX: (Math.random() - 0.5) * 0.1,
-                    speedY: (Math.random() - 0.5) * 0.1,
-                    speedZ: (Math.random() - 0.5) * 0.1
-                });
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-            const material = new THREE.PointsMaterial({
-                size: 4,
-                map: texture,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                vertexColors: true
-            });
-
-            bgParticleSystem = new THREE.Points(geometry, material);
-            scene.add(bgParticleSystem);
-        }
-
-        // --- TEXT PARTICLE SYSTEM ---
-        function initTextParticles(texture) {
-            // 1. Create a 2D Canvas to draw font characters and scan pixels
-            const fontCanvas = document.createElement('canvas');
-            const fontCtx = fontCanvas.getContext('2d');
-            
-            // Adjust canvas resolution for 3D quality
-            const width = 640;
-            const height = 240;
-            fontCanvas.width = width;
-            fontCanvas.height = height;
-
-            fontCtx.fillStyle = '#ffffff';
-            // Outfit is loaded via Google Fonts
-            fontCtx.font = '800 90px Outfit'; 
-            fontCtx.textAlign = 'center';
-            fontCtx.textBaseline = 'middle';
-            
-            fontCtx.fillText('HELLO', width / 2, 65);
-            fontCtx.fillText('WORLD', width / 2, 175);
-
-            // 2. Scan the canvas for pixels
-            const imgData = fontCtx.getImageData(0, 0, width, height);
-            const data = imgData.data;
-            const tempCoords = [];
-            
-            // Adjust stride gap to control density of particles (higher gap = fewer particles, better performance)
-            const gap = window.innerWidth < 640 ? 5 : 4; 
-            
-            for (let y = 0; y < height; y += gap) {
-                for (let x = 0; x < width; x += gap) {
-                    const alpha = data[(y * width + x) * 4 + 3];
-                    if (alpha > 140) { // Solid pixel threshold
-                        // Convert 2D coordinates to centered local 3D coordinates
-                        const localX = (x - width / 2) * textParticleScale;
-                        const localY = -(y - height / 2) * textParticleScale;
-                        
-                        tempCoords.push({ x: localX, y: localY });
-                    }
-                }
-            }
-
-            // 3. Create Points Geometry
-            const geometry = new THREE.BufferGeometry();
-            const textParticleCount = tempCoords.length;
-            const positions = new Float32Array(textParticleCount * 3);
-            const colors = new Float32Array(textParticleCount * 3);
-
-            const activeColorPalette = isDarkMode ? darkParticleColors : lightParticleColors;
-
-            for (let i = 0; i < textParticleCount; i++) {
-                const pt = tempCoords[i];
-                
-                // Spawn position (scatter initially for entry transition)
-                positions[i * 3] = pt.x + (Math.random() - 0.5) * 50;
-                positions[i * 3 + 1] = pt.y + (Math.random() - 0.5) * 50;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
-
-                // Color calculation based on X coordinate (beautiful horizontal gradient)
-                const ratio = (pt.x + (width * textParticleScale) / 2) / (width * textParticleScale);
-                const colorLeft = new THREE.Color(activeColorPalette[0]);
-                const colorRight = new THREE.Color(activeColorPalette[1]);
-                const blendedColor = colorLeft.clone().lerp(colorRight, ratio);
-
-                colors[i * 3] = blendedColor.r;
-                colors[i * 3 + 1] = blendedColor.g;
-                colors[i * 3 + 2] = blendedColor.b;
-
-                // Store physics variables
-                textParticles.push({
-                    ox: pt.x,            // Original target position X
-                    oy: pt.y,            // Original target position Y
-                    oz: 30,              // Push slightly forward relative to card
-                    x: positions[i * 3],
-                    y: positions[i * 3 + 1],
-                    z: positions[i * 3 + 2],
-                    vx: 0,
-                    vy: 0,
-                    vz: 0,
-                    baseColor: blendedColor.clone()
-                });
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-            const material = new THREE.PointsMaterial({
-                size: window.innerWidth < 640 ? 3.0 : 3.6,
-                map: texture,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                vertexColors: true
-            });
-
-            textParticleSystem = new THREE.Points(geometry, material);
-            scene.add(textParticleSystem);
-        }
-
-        // --- PHYSICS EXPLOSION ---
-        function triggerExplosion(screenX, screenY) {
-            if (!textParticleSystem) return;
-
-            // Translate 2D screen coordinates to approximate 3D coordinates in camera view
-            // Since camera is at Z=320 and text is around Z=30, z-depth is approx 290 units away
-            const vector = new THREE.Vector3(
-                (screenX / window.innerWidth) * 2 - 1,
-                -(screenY / window.innerHeight) * 2 + 1,
-                0.5
-            );
-            vector.unproject(camera);
-            const dir = vector.sub(camera.position).normalize();
-            const distance = (30 - camera.position.z) / dir.z; // Project to Z=30 plane
-            const clickWorldPos = camera.position.clone().add(dir.multiplyScalar(distance));
-
-            // Subtract card world rotation offset to get local coordinates for particle math
-            // Since text particle coordinates are local to target group coordinates
-            const radX = THREE.MathUtils.degToRad(currentTiltX);
-            const radY = THREE.MathUtils.degToRad(currentTiltY);
-
-            // Compute local target point relative to card center
-            // Approx relative translation (card is centered)
-            const localClickX = clickWorldPos.x;
-            const localClickY = clickWorldPos.y;
-
-            // Apply force to particles
-            const blastRadius = window.innerWidth < 640 ? 100 : 180;
-            const explosionForce = window.innerWidth < 640 ? 18 : 26;
-
-            for (let i = 0; i < textParticles.length; i++) {
-                const pt = textParticles[i];
-                const dx = pt.x - localClickX;
-                const dy = pt.y - localClickY;
-                const dz = pt.z - 30; // local relative Z
-                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-                if (dist < blastRadius) {
-                    // Strong force that falls off over distance
-                    const intensity = (blastRadius - dist) / blastRadius;
-                    const force = intensity * explosionForce;
-
-                    // Direct outbound vector
-                    const angle = Math.atan2(dy, dx);
-                    
-                    pt.vx += Math.cos(angle) * force + (Math.random() - 0.5) * 5;
-                    pt.vy += Math.sin(angle) * force + (Math.random() - 0.5) * 5;
-                    pt.vz += (Math.random() - 0.2) * force * 1.5; // Blow outwards in Z direction
-                }
-            }
-            
-            // Subtle layout rumble on click
-            card.style.transform = `rotateX(${currentTiltX * 1.8}deg) rotateY(${currentTiltY * 1.8}deg) translateZ(10px)`;
-            setTimeout(() => {
-                card.style.transform = `rotateX(${currentTiltX}deg) rotateY(${currentTiltY}deg)`;
-            }, 150);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        // Particle Interaction & Animation loop
-        let bgAngle = 0;
-        
-        function animateThree() {
-            requestAnimationFrame(animateThree);
-
-            // 1. Animate background particles
-            if (bgParticleSystem && isMotionActive) {
-                bgAngle += 0.0006;
-                bgParticleSystem.rotation.y = bgAngle;
-                bgParticleSystem.rotation.x = bgAngle * 0.4;
-            }
-
-            // 2. Physics simulation for Text Particles
-            if (textParticleSystem) {
-                const positions = textParticleSystem.geometry.attributes.position.array;
-                
-                // Get local coordinates of mouse relative to 3D text plane
-                const mouseVec = new THREE.Vector3(
-                    (mouseX / window.innerWidth) * 2 - 1,
-                    -(mouseY / window.innerHeight) * 2 + 1,
-                    0.5
-                );
-                mouseVec.unproject(camera);
-                const mouseDir = mouseVec.sub(camera.position).normalize();
-                const mouseDistance = (30 - camera.position.z) / mouseDir.z;
-                const localMousePos = camera.position.clone().add(mouseDir.multiplyScalar(mouseDistance));
-
-                // Match 3D text rotation to card's DOM tilt angle for seamless depth integration
-                const targetRadX = THREE.MathUtils.degToRad(currentTiltX);
-                const targetRadY = THREE.MathUtils.degToRad(currentTiltY);
-                
-                textParticleSystem.rotation.x += (targetRadX - textParticleSystem.rotation.x) * 0.1;
-                textParticleSystem.rotation.y += (targetRadY - textParticleSystem.rotation.y) * 0.1;
-
-                const springStrength = 0.04;
-                const friction = 0.88;
-                const repelRadius = 45;
-                const repelStrength = 1.4;
-
-                for (let i = 0; i < textParticles.length; i++) {
-                    const pt = textParticles[i];
-                    
-                    // Spring force pointing back to baseline
-                    const ax = (pt.ox - pt.x) * springStrength;
-                    const ay = (pt.oy - pt.y) * springStrength;
-                    const az = (pt.oz - pt.z) * springStrength;
-
-                    pt.vx += ax;
-                    pt.vy += ay;
-                    pt.vz += az;
-
-                    // Mouse pointer repulsion
-                    const rdx = pt.x - localMousePos.x;
-                    const rdy = pt.y - localMousePos.y;
-                    const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
-
-                    if (rdist < repelRadius) {
-                        const rIntensity = (repelRadius - rdist) / repelRadius;
-                        const rForce = rIntensity * repelStrength;
-                        const rAngle = Math.atan2(rdy, rdx);
-
-                        pt.vx += Math.cos(rAngle) * rForce;
-                        pt.vy += Math.sin(rAngle) * rForce;
-                    }
-
-                    // Apply friction and integrate position
-                    pt.vx *= friction;
-                    pt.vy *= friction;
-                    pt.vz *= friction;
-
-                    pt.x += pt.vx;
-                    pt.y += pt.vy;
-                    pt.z += pt.vz;
-
-                    // Write back to geometry positions buffer
-                    const idx = i * 3;
-                    positions[idx] = pt.x;
-                    positions[idx + 1] = pt.y;
-                    positions[idx + 2] = pt.z;
-                }
-                
-                textParticleSystem.geometry.attributes.position.needsUpdate = true;
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        // Smooth transition for background particles
-        function transitionParticlesColors() {
+        function transitionBgParticlesColors() {
             if (!bgParticleSystem) return;
             const colors = bgParticleSystem.geometry.attributes.color.array;
             const targetPalette = isDarkMode ? darkParticleColors : lightParticleColors;
@@ -848,20 +571,208 @@
             }
         }
 
-        // Smooth transition for text particles
+        // --- THREE.JS SYSTEM 2: FOREGROUND EMBEDDED TEXT PARTICLES ---
+        let textScene, textCamera, textRenderer, textParticleSystem;
+        let textParticles = [];
+        let textWidth = 500, textHeight = 180;
+        let relativeMouseX = 0, relativeMouseY = 0;
+
+        function initTextThree() {
+            const textContainer = document.getElementById('text-canvas-container');
+            const rect = textContainer.getBoundingClientRect();
+            textWidth = rect.width || 500;
+            textHeight = rect.height || 180;
+
+            textScene = new THREE.Scene();
+            
+            // Using OrthographicCamera for 1:1 pixel grid mapping
+            textCamera = new THREE.OrthographicCamera(
+                -textWidth / 2, textWidth / 2,
+                textHeight / 2, -textHeight / 2,
+                1, 1000
+            );
+            textCamera.position.z = 100;
+
+            textRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            textRenderer.setSize(textWidth, textHeight);
+            textRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            textContainer.appendChild(textRenderer.domElement);
+
+            // Trigger font check and generation
+            const texture = createParticleTexture();
+            
+            // Safe Font loading watcher
+            if (document.fonts) {
+                document.fonts.ready.then(() => {
+                    // Slight delay to guarantee Layout Engine has applied Google WebFont
+                    setTimeout(() => generateTextParticles(texture), 100);
+                });
+                
+                // Absolute fallback timeout if promise fails to resolve
+                setTimeout(() => {
+                    if (textParticles.length === 0) {
+                        generateTextParticles(texture);
+                    }
+                }, 1200);
+            } else {
+                generateTextParticles(texture);
+            }
+
+            // Listen to mousemove globally to calculate local coordinates relative to text container
+            window.addEventListener('mousemove', (e) => {
+                const containerRect = textContainer.getBoundingClientRect();
+                // Map mouse coordinates locally where center of text container is (0,0)
+                relativeMouseX = e.clientX - containerRect.left - containerRect.width / 2;
+                relativeMouseY = -(e.clientY - containerRect.top - containerRect.height / 2);
+            });
+
+            // Listen to click globally to trigger explosion relative to text canvas
+            window.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'BUTTON' && !e.target.closest('.actions')) {
+                    const containerRect = textContainer.getBoundingClientRect();
+                    const localClickX = e.clientX - containerRect.left - containerRect.width / 2;
+                    const localClickY = -(e.clientY - containerRect.top - containerRect.height / 2);
+                    triggerTextExplosion(localClickX, localClickY);
+                }
+            });
+        }
+
+        function generateTextParticles(texture) {
+            // Check if already populated to prevent double initializations
+            if (textParticles.length > 0) return;
+
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = textWidth;
+            tempCanvas.height = textHeight;
+
+            // Draw HELLO WORLD text into memory canvas
+            tempCtx.fillStyle = '#ffffff';
+            // Scale font size dynamically depending on viewport width
+            const fontSize = textWidth < 450 ? 54 : 70;
+            tempCtx.font = `800 ${fontSize}px 'Outfit', 'Space Grotesk', sans-serif`;
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'middle';
+
+            // Split into two lines for structured layout
+            tempCtx.fillText('HELLO', textWidth / 2, textHeight * 0.28);
+            tempCtx.fillText('WORLD', textWidth / 2, textHeight * 0.72);
+
+            // Rasterize and scan pixels
+            const imgData = tempCtx.getImageData(0, 0, textWidth, textHeight);
+            const data = imgData.data;
+            const coords = [];
+            
+            // Densities depending on device size
+            const gap = textWidth < 450 ? 3 : 4; 
+
+            for (let y = 0; y < textHeight; y += gap) {
+                for (let x = 0; x < textWidth; x += gap) {
+                    const idx = (y * textWidth + x) * 4;
+                    const alpha = data[idx + 3];
+                    if (alpha > 80) { // Solid opacity pixel
+                        // Convert raster coords to local camera space
+                        const localX = x - textWidth / 2;
+                        const localY = -(y - textHeight / 2);
+                        coords.push({ x: localX, y: localY });
+                    }
+                }
+            }
+
+            // Create Points Geometry
+            const geometry = new THREE.BufferGeometry();
+            const count = coords.length;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            const activeColorPalette = isDarkMode ? darkParticleColors : lightParticleColors;
+
+            for (let i = 0; i < count; i++) {
+                const pt = coords[i];
+                // Spawn with scatter
+                positions[i * 3] = pt.x + (Math.random() - 0.5) * 40;
+                positions[i * 3 + 1] = pt.y + (Math.random() - 0.5) * 40;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+                // Color calculation: left-to-right gradient
+                const ratio = (pt.x + textWidth / 2) / textWidth;
+                const colLeft = new THREE.Color(activeColorPalette[0]);
+                const colRight = new THREE.Color(activeColorPalette[1]);
+                const blended = colLeft.clone().lerp(colRight, ratio);
+
+                colors[i * 3] = blended.r;
+                colors[i * 3 + 1] = blended.g;
+                colors[i * 3 + 2] = blended.b;
+
+                textParticles.push({
+                    ox: pt.x,
+                    oy: pt.y,
+                    oz: 0,
+                    x: positions[i * 3],
+                    y: positions[i * 3 + 1],
+                    z: positions[i * 3 + 2],
+                    vx: 0, vy: 0, vz: 0,
+                    color: blended.clone()
+                });
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: textWidth < 450 ? 3.0 : 3.8,
+                map: texture,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                vertexColors: true
+            });
+
+            textParticleSystem = new THREE.Points(geometry, material);
+            textScene.add(textParticleSystem);
+        }
+
+        function triggerTextExplosion(localX, localY) {
+            if (textParticles.length === 0) return;
+
+            const blastRadius = textWidth < 450 ? 80 : 120;
+            const explosionForce = textWidth < 450 ? 12 : 18;
+
+            for (let i = 0; i < textParticles.length; i++) {
+                const pt = textParticles[i];
+                const dx = pt.x - localX;
+                const dy = pt.y - localY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < blastRadius) {
+                    const intensity = (blastRadius - dist) / blastRadius;
+                    const force = intensity * explosionForce;
+                    const angle = Math.atan2(dy, dx);
+                    
+                    pt.vx += Math.cos(angle) * force + (Math.random() - 0.5) * 3;
+                    pt.vy += Math.sin(angle) * force + (Math.random() - 0.5) * 3;
+                    pt.vz += (Math.random() - 0.5) * force * 1.5;
+                }
+            }
+
+            // Card DOM micro-rumble
+            card.style.transform = `rotateX(${currentTiltX * 1.6}deg) rotateY(${currentTiltY * 1.6}deg) translateZ(10px)`;
+            setTimeout(() => {
+                card.style.transform = `rotateX(${currentTiltX}deg) rotateY(${currentTiltY}deg)`;
+            }, 120);
+        }
+
         function transitionTextParticlesColors() {
             if (!textParticleSystem) return;
             const colors = textParticleSystem.geometry.attributes.color.array;
             const targetPalette = isDarkMode ? darkParticleColors : lightParticleColors;
-            const width = 640;
 
             for (let i = 0; i < textParticles.length; i++) {
                 const pt = textParticles[i];
-                // Recalculate gradient matching new theme
-                const ratio = (pt.ox + (width * textParticleScale) / 2) / (width * textParticleScale);
-                const colorLeft = new THREE.Color(targetPalette[0]);
-                const colorRight = new THREE.Color(targetPalette[1]);
-                const targetColor = colorLeft.clone().lerp(colorRight, ratio);
+                const ratio = (pt.ox + textWidth / 2) / textWidth;
+                const colLeft = new THREE.Color(targetPalette[0]);
+                const colRight = new THREE.Color(targetPalette[1]);
+                const targetColor = colLeft.clone().lerp(colRight, ratio);
 
                 let step = 0;
                 const steps = 25;
@@ -880,9 +791,131 @@
             }
         }
 
-        // Initialize Three.js
-        initThree();
-        animateThree();
+        function handleResizeTextSystem() {
+            const textContainer = document.getElementById('text-canvas-container');
+            const rect = textContainer.getBoundingClientRect();
+            textWidth = rect.width || 500;
+            textHeight = rect.height || 180;
+
+            if (textRenderer) {
+                textRenderer.setSize(textWidth, textHeight);
+                textCamera.left = -textWidth / 2;
+                textCamera.right = textWidth / 2;
+                textCamera.top = textHeight / 2;
+                textCamera.bottom = -textHeight / 2;
+                textCamera.updateProjectionMatrix();
+
+                // Re-rasterize coordinates for the new aspect ratio
+                textParticles = [];
+                if (textParticleSystem) textScene.remove(textParticleSystem);
+                const texture = createParticleTexture();
+                generateTextParticles(texture);
+            }
+        }
+
+        // --- MAIN RENDER LOOP AND INTEGRATION ---
+        let bgAngle = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. Background particles rendering
+            if (bgParticleSystem && isMotionActive) {
+                bgAngle += 0.0006;
+                bgParticleSystem.rotation.y = bgAngle;
+                bgParticleSystem.rotation.x = bgAngle * 0.4;
+                
+                const positions = bgParticleSystem.geometry.attributes.position.array;
+                for (let i = 0; i < bgParticleCount; i++) {
+                    const idx = i * 3;
+                    
+                    // Simple orbital baseline drifts
+                    bgParticles[i].x += bgParticles[i].speedX;
+                    bgParticles[i].y += bgParticles[i].speedY;
+                    bgParticles[i].z += bgParticles[i].speedZ;
+
+                    if (Math.abs(bgParticles[i].x) > 350) bgParticles[i].speedX *= -1;
+                    if (Math.abs(bgParticles[i].y) > 350) bgParticles[i].speedY *= -1;
+                    if (Math.abs(bgParticles[i].z) > 350) bgParticles[i].speedZ *= -1;
+
+                    positions[idx] = bgParticles[i].x;
+                    positions[idx + 1] = bgParticles[i].y;
+                    positions[idx + 2] = bgParticles[i].z;
+                }
+                bgParticleSystem.geometry.attributes.position.needsUpdate = true;
+                bgRenderer.render(bgScene, bgCamera);
+            }
+
+            // 2. Foreground Embedded Text particles rendering
+            if (textParticleSystem) {
+                const positions = textParticleSystem.geometry.attributes.position.array;
+
+                const springStrength = 0.05;
+                const friction = 0.86;
+                const repelRadius = 38;
+                const repelStrength = 1.1;
+
+                for (let i = 0; i < textParticles.length; i++) {
+                    const pt = textParticles[i];
+
+                    // Spring return forces
+                    const ax = (pt.ox - pt.x) * springStrength;
+                    const ay = (pt.oy - pt.y) * springStrength;
+                    const az = (pt.oz - pt.z) * springStrength;
+
+                    pt.vx += ax;
+                    pt.vy += ay;
+                    pt.vz += az;
+
+                    // Hover repel physics relative to local coordinate mapped mouse
+                    const rdx = pt.x - relativeMouseX;
+                    const rdy = pt.y - relativeMouseY;
+                    const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
+
+                    if (rdist < repelRadius) {
+                        const rIntensity = (repelRadius - rdist) / repelRadius;
+                        const rForce = rIntensity * repelStrength;
+                        const rAngle = Math.atan2(rdy, rdx);
+
+                        pt.vx += Math.cos(rAngle) * rForce;
+                        pt.vy += Math.sin(rAngle) * rForce;
+                    }
+
+                    // Apply friction and step physics
+                    pt.vx *= friction;
+                    pt.vy *= friction;
+                    pt.vz *= friction;
+
+                    pt.x += pt.vx;
+                    pt.y += pt.vy;
+                    pt.z += pt.vz;
+
+                    const idx = i * 3;
+                    positions[idx] = pt.x;
+                    positions[idx + 1] = pt.y;
+                    positions[idx + 2] = pt.z;
+                }
+
+                textParticleSystem.geometry.attributes.position.needsUpdate = true;
+                textRenderer.render(textScene, textCamera);
+            }
+        }
+
+        // Global Resize Integration
+        window.addEventListener('resize', () => {
+            // Resize background WebGL
+            bgCamera.aspect = window.innerWidth / window.innerHeight;
+            bgCamera.updateProjectionMatrix();
+            bgRenderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Resize text WebGL
+            handleResizeTextSystem();
+        });
+
+        // Initialize All systems
+        initBgThree();
+        initTextThree();
+        animate();
 
         // Pause/Play Motion Button
         const btnToggleMotion = document.getElementById('btnToggleMotion');
@@ -891,10 +924,10 @@
             btnToggleMotion.innerText = isMotionActive ? "Pause Motion" : "Resume Motion";
         });
 
-        // Confetti Magic Button Action
+        // Explore Magic Action
         const btnExplore = document.getElementById('btnExplore');
         btnExplore.addEventListener('click', () => {
-            // 1. Confetti explosion
+            // Confetti Explosion
             const duration = 2.5 * 1000;
             const animationEnd = Date.now() + duration;
             const defaults = { startVelocity: 25, spread: 360, ticks: 60, zIndex: 1000 };
@@ -922,19 +955,17 @@
                 }));
             }, 250);
 
-            // 2. Trigger a massive particle text explosion from the center
-            if (textParticleSystem) {
-                const centerForce = window.innerWidth < 640 ? 15 : 22;
+            // Trigger a massive particle text explosion from the center
+            if (textParticles.length > 0) {
+                const centerForce = textWidth < 450 ? 12 : 20;
                 for (let i = 0; i < textParticles.length; i++) {
                     const pt = textParticles[i];
-                    
-                    // Outward vector from center (0, 0)
                     const dist = Math.sqrt(pt.x * pt.x + pt.y * pt.y);
-                    const force = (1.0 - (dist / 200)) * centerForce;
+                    const force = (1.0 - (dist / (textWidth / 2))) * centerForce;
                     
-                    pt.vx += (pt.x / (dist || 1)) * force + (Math.random() - 0.5) * 6;
-                    pt.vy += (pt.y / (dist || 1)) * force + (Math.random() - 0.5) * 6;
-                    pt.vz += (Math.random() - 0.3) * force * 2;
+                    pt.vx += (pt.x / (dist || 1)) * force + (Math.random() - 0.5) * 5;
+                    pt.vy += (pt.y / (dist || 1)) * force + (Math.random() - 0.5) * 5;
+                    pt.vz += (Math.random() - 0.5) * force * 1.5;
                 }
             }
         });
