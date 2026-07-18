@@ -137,6 +137,8 @@
             justify-content: center;
             gap: 0.7rem;
             transform: translateZ(25px);
+            position: relative;
+            z-index: 50;
         }
         
         .meta-separator {
@@ -432,35 +434,36 @@
     <script>
         // --- REAL-TIME INTRO CLOCK & GEOLOCATION ---
         function updateClock() {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const sec = String(now.getSeconds()).padStart(2, '0');
-            
-            const dateEl = document.getElementById('metaDate');
-            const timeEl = document.getElementById('metaTime');
-            if (dateEl) dateEl.innerText = `${yyyy}.${mm}.${dd}`;
-            if (timeEl) timeEl.innerText = `${hh}:${min}:${sec}`;
+            try {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const sec = String(now.getSeconds()).padStart(2, '0');
+                
+                const dateEl = document.getElementById('metaDate');
+                const timeEl = document.getElementById('metaTime');
+                if (dateEl) dateEl.innerText = `${yyyy}.${mm}.${dd}`;
+                if (timeEl) timeEl.innerText = `${hh}:${min}:${sec}`;
+            } catch (e) {
+                console.error("Clock update failed:", e);
+            }
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        
+        try {
+            updateClock();
+            setInterval(updateClock, 1000);
+        } catch (e) {
+            console.error("Timer failed:", e);
+        }
 
-        // Fetch user location safely based on IP (non-blocking)
-        fetch('https://ipapi.co/json/')
-            .then(res => res.json())
-            .then(data => {
-                const locEl = document.getElementById('metaLoc');
-                if (locEl && data && data.city) {
-                    locEl.innerText = `${data.city.toUpperCase()}, ${data.country_code}`;
-                }
-            })
-            .catch(() => {
-                const locEl = document.getElementById('metaLoc');
-                if (locEl) locEl.innerText = "SEOUL, KR";
-            });
+        // Initialize fallback location immediately
+        try {
+            const locEl = document.getElementById('metaLoc');
+            if (locEl) locEl.innerText = "SEOUL, KR";
+        } catch (e) {}
 
         // --- CUSTOM CURSOR STALKER ---
         const stalker = document.getElementById('cursorStalker');
@@ -1032,6 +1035,28 @@
                 }
             }
         });
+
+        // Fail-safe sandboxed Geolocation Fetch
+        try {
+            fetch('https://ipapi.co/json/')
+                .then(res => {
+                    if (!res.ok) throw new Error("Location fetch status error");
+                    return res.json();
+                })
+                .then(data => {
+                    const locEl = document.getElementById('metaLoc');
+                    if (locEl && data && data.city) {
+                        locEl.innerText = `${data.city.toUpperCase()}, ${data.country_code}`;
+                    }
+                })
+                .catch(err => {
+                    console.warn("Could not fetch geolocation:", err);
+                    const locEl = document.getElementById('metaLoc');
+                    if (locEl) locEl.innerText = "SEOUL, KR";
+                });
+        } catch (e) {
+            console.error("Geolocation fetch initialization failed:", e);
+        }
     </script>
 </body>
 </html>
