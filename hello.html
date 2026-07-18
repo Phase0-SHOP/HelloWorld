@@ -820,27 +820,52 @@
             requestAnimationFrame(animate);
 
             // 1. Background particles rendering
-            if (bgParticleSystem && isMotionActive) {
-                bgAngle += 0.0006;
-                bgParticleSystem.rotation.y = bgAngle;
-                bgParticleSystem.rotation.x = bgAngle * 0.4;
+            if (bgParticleSystem) {
+                if (isMotionActive) {
+                    bgAngle += 0.0006;
+                    bgParticleSystem.rotation.y = bgAngle;
+                    bgParticleSystem.rotation.x = bgAngle * 0.4;
+                }
                 
                 const positions = bgParticleSystem.geometry.attributes.position.array;
+                
+                // Map mouse coordinates to 3D space for background camera
+                const bgTargetX = (mouseX - window.innerWidth / 2) * 0.42;
+                const bgTargetY = -(mouseY - window.innerHeight / 2) * 0.42;
+
                 for (let i = 0; i < bgParticleCount; i++) {
                     const idx = i * 3;
                     
-                    // Simple orbital baseline drifts
-                    bgParticles[i].x += bgParticles[i].speedX;
-                    bgParticles[i].y += bgParticles[i].speedY;
-                    bgParticles[i].z += bgParticles[i].speedZ;
+                    if (isMotionActive) {
+                        // Simple orbital baseline drifts
+                        bgParticles[i].x += bgParticles[i].speedX;
+                        bgParticles[i].y += bgParticles[i].speedY;
+                        bgParticles[i].z += bgParticles[i].speedZ;
 
-                    if (Math.abs(bgParticles[i].x) > 350) bgParticles[i].speedX *= -1;
-                    if (Math.abs(bgParticles[i].y) > 350) bgParticles[i].speedY *= -1;
-                    if (Math.abs(bgParticles[i].z) > 350) bgParticles[i].speedZ *= -1;
+                        if (Math.abs(bgParticles[i].x) > 350) bgParticles[i].speedX *= -1;
+                        if (Math.abs(bgParticles[i].y) > 350) bgParticles[i].speedY *= -1;
+                        if (Math.abs(bgParticles[i].z) > 350) bgParticles[i].speedZ *= -1;
+                    }
 
-                    positions[idx] = bgParticles[i].x;
-                    positions[idx + 1] = bgParticles[i].y;
-                    positions[idx + 2] = bgParticles[i].z;
+                    let targetPX = bgParticles[i].x;
+                    let targetPY = bgParticles[i].y;
+                    let targetPZ = bgParticles[i].z;
+
+                    // Repel background stars from mouse cursor
+                    const dx = bgTargetX - positions[idx];
+                    const dy = bgTargetY - positions[idx + 1];
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 150) {
+                        const force = (150 - dist) * 0.06;
+                        positions[idx] -= (dx / dist) * force;
+                        positions[idx + 1] -= (dy / dist) * force;
+                    }
+
+                    // Spring return back to baseline trajectory
+                    positions[idx] += (targetPX - positions[idx]) * 0.06;
+                    positions[idx + 1] += (targetPY - positions[idx + 1]) * 0.06;
+                    positions[idx + 2] += (targetPZ - positions[idx + 2]) * 0.06;
                 }
                 bgParticleSystem.geometry.attributes.position.needsUpdate = true;
                 bgRenderer.render(bgScene, bgCamera);
