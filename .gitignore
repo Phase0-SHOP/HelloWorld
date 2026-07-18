@@ -1,2 +1,5 @@
 # AWS Server login info and credentials
 AWS.TXT
+
+# macOS system files
+.DS_Store
