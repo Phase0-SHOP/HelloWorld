@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>황혜인 · 브랜드 스토리텔러</title>
+<meta name="description" content="안녕하세요, 브랜드 스토리텔러 황혜인 강사입니다.">
+<meta property="og:title" content="황혜인 · 브랜드 스토리텔러 강사">
+<meta property="og:description" content="안녕하세요, 브랜드 스토리텔러 황혜인 강사입니다. 연락처 저장 · 카카오톡 · 포트폴리오">
+<meta property="og:url" content="https://phase0.shop/card/">
+<meta name="theme-color" content="#f6f1ea">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f1ea; --card: #fffdf9; --ink: #1f1a17; --muted: #6f655d;
+    --line: #e5dcd1; --accent: #b4532a; --accent-soft: #f3e1d6;
+    --kakao: #fee500; --serif: 'Noto Serif KR', serif;
+    --sans: 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #171412; --card: #211d1a; --ink: #f3ece4; --muted: #a99d92;
+            --line: #362f2a; --accent: #e08455; --accent-soft: #3a2a20; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans);
+         line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 28px 16px 64px; }
+
+  header { text-align: center; padding: 24px 0 8px; }
+  .avatar { width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 18px; overflow: hidden;
+            background: var(--accent-soft); color: var(--accent); display: grid; place-items: center;
+            font: 700 34px var(--serif); border: 1px solid var(--line); }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .greet { font: 500 15px var(--sans); color: var(--muted); }
+  h1 { font: 700 30px/1.3 var(--serif); margin: 4px 0 2px; letter-spacing: -0.02em; }
+  .role { color: var(--accent); font-weight: 600; font-size: 15px; }
+  .intro { margin: 16px auto 0; max-width: 400px; font-size: 15px; color: var(--muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px; }
+  .tags span { font-size: 12.5px; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); }
+
+  .save { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+          margin: 28px 0 8px; padding: 16px; border-radius: 14px; background: var(--ink);
+          color: var(--paper); font-weight: 700; font-size: 16px; }
+  .hint { text-align: center; font-size: 12.5px; color: var(--muted); min-height: 1em; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .btn { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 14px;
+         background: var(--card); border: 1px solid var(--line); font-weight: 600; font-size: 14.5px; }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .btn.kakao { background: var(--kakao); color: #191600; border-color: transparent; }
+  .btn.wide { grid-column: 1 / -1; justify-content: center; }
+  .btn[hidden] { display: none; }
+
+  section { margin-top: 44px; }
+  h2 { font: 700 19px var(--serif); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  h2 small { font: 400 12px var(--sans); color: var(--muted); }
+
+  .remember { display: block; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: var(--card); }
+  .remember img { display: block; width: 100%; }
+  .remember p { padding: 12px 14px; font-size: 13.5px; color: var(--muted); }
+
+  .pf { display: grid; gap: 12px; }
+  .pf article { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .pf img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+  .pf .body { padding: 14px 16px; }
+  .meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .chip { color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 99px; font-weight: 600; }
+  .pf h3, .feed h3 { font-size: 15.5px; margin: 6px 0 4px; line-height: 1.45; }
+  .pf p, .feed p { font-size: 13.5px; color: var(--muted); }
+
+  .filters { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; }
+  .filters button { font: 600 13px var(--sans); padding: 6px 12px; border-radius: 99px; cursor: pointer;
+                    border: 1px solid var(--line); background: transparent; color: var(--muted); white-space: nowrap; }
+  .filters button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .feed { display: grid; gap: 10px; }
+  .feed a { display: flex; gap: 12px; padding: 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+  .feed .thumb { width: 72px; height: 72px; border-radius: 10px; object-fit: cover; flex: none; background: var(--accent-soft); }
+  .feed .txt { min-width: 0; }
+  .feed p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .empty { font-size: 13.5px; color: var(--muted); padding: 18px; text-align: center; border: 1px dashed var(--line); border-radius: 14px; }
+  .src-naver { color: #03a94d; } .src-tistory { color: #eb531f; } .src-threads { color: var(--ink); }
+
+  footer { margin-top: 48px; text-align: center; font-size: 12px; color: var(--muted); }
+  footer a { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="avatar" id="avatar">혜</div>
+    <p class="greet" id="greet">안녕하세요, 브랜드 스토리텔러 황혜인 강사입니다.</p>
+    <h1 id="name">황혜인</h1>
+    <p class="role" id="role">브랜드 스토리텔러 · 강사</p>
+    <p class="intro" id="intro"></p>
+    <div class="tags" id="tags"></div>
+  </header>
+
+  <a class="save" id="save" href="contact.vcf">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M19 8v6M16 11h6"/></svg>
+    <span>연락처 저장하기</span>
+  </a>
+  <p class="hint" id="hint"></p>
+
+  <div class="grid">
+    <a class="btn kakao wide" id="kakao" hidden>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>
+      카카오톡으로 문의하기
+    </a>
+    <a class="btn" id="call" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>전화</a>
+    <a class="btn" id="sms" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>문자</a>
+    <a class="btn" id="mail" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>이메일</a>
+    <a class="btn" id="web" href="https://phase0.shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>phase0.shop</a>
+    <a class="btn" id="naverBlog" hidden><b class="src-naver">N</b>네이버 블로그</a>
+    <a class="btn" id="tistory" hidden><b class="src-tistory">T</b>티스토리</a>
+    <a class="btn" id="threads" hidden><b class="src-threads">@</b>스레드</a>
+  </div>
+
+  <section id="rememberSec" hidden>
+    <h2>리멤버 명함 <small>탭하면 리멤버에서 열려요</small></h2>
+    <a class="remember" id="remember">
+      <img src="assets/remember-card.jpg" alt="리멤버에 등록된 황혜인 명함" onerror="this.remove()">
+      <p>리멤버 앱에서 명함 받기 →</p>
+    </a>
+  </section>
+
+  <section>
+    <h2>포트폴리오 <small>강의 · 프로젝트 기록</small></h2>
+    <div class="pf" id="portfolio"><p class="empty">포트폴리오를 불러오는 중…</p></div>
+  </section>
+
+  <section>
+    <h2>최근 글 <small id="updated"></small></h2>
+    <div class="filters" id="filters">
+      <button class="on" data-f="all">전체</button>
+      <button data-f="naver">네이버 블로그</button>
+      <button data-f="tistory">티스토리</button>
+      <button data-f="threads">스레드</button>
+    </div>
+    <div class="feed" id="feed"><p class="empty">글을 불러오는 중…</p></div>
+  </section>
+
+  <footer>
+    <p>© PHASE0 · <a href="https://phase0.shop">phase0.shop</a></p>
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const real = v => v && !String(v).includes('TODO');
+const escape = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SRC = { naver: '네이버 블로그', tistory: '티스토리', threads: '스레드' };
+
+// 아이폰 / 안드로이드 판별 (?os=ios|android 로 강제 가능)
+const qsOS = new URLSearchParams(location.search).get('os');
+const ua = navigator.userAgent;
+const os = qsOS || (/iPhone|iPad|iPod/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : 'pc');
+const HINTS = {
+  ios: '아이폰: 버튼을 누르면 연락처 미리보기가 열려요 → 오른쪽 위 ‘공유’ 또는 ‘새로운 연락처 생성’',
+  android: '안드로이드: 다운로드된 파일을 누르면 연락처 앱으로 저장돼요 (삼성·LG 모두 가능)',
+  pc: 'PC에서는 .vcf 파일이 내려받아집니다. 휴대폰으로 QR을 찍으면 바로 저장돼요.'
+};
+
+function link(id, href) { const a = $(id); if (!real(href)) return; a.href = href; a.hidden = false; }
+
+async function load(path, fallback) {
+  try { const r = await fetch(path, { cache: 'no-cache' }); return r.ok ? await r.json() : fallback; }
+  catch { return fallback; }
+}
+
+(async () => {
+  $('hint').textContent = HINTS[os];
+  if (os === 'android') $('save').setAttribute('download', '황혜인_연락처.vcf');
+
+  const p = await load('profile.json', null);
+  if (p) {
+    $('greet').textContent = p.greeting;
+    $('name').textContent = p.name;
+    $('role').textContent = p.title;
+    $('intro').textContent = p.intro;
+    $('tags').innerHTML = (p.topics || []).map(t => `<span>${escape(t)}</span>`).join('');
+    const L = p.links || {};
+    link('kakao', L.kakao);
+    if (real(p.phone)) { link('call', 'tel:' + p.phone.replace(/[^\d+]/g, '')); link('sms', 'sms:' + p.phone.replace(/[^\d+]/g, '')); }
+    if (real(p.email)) link('mail', 'mailto:' + p.email);
+    link('web', p.website);
+    ['naverBlog', 'tistory', 'threads'].forEach(k => link(k, L[k]));
+    if (real(L.remember)) { $('remember').href = L.remember; $('rememberSec').hidden = false; }
+  }
+  const img = new Image();
+  img.onload = () => { $('avatar').textContent = ''; $('avatar').appendChild(img); };
+  img.src = 'assets/profile.jpg'; img.alt = '황혜인 프로필 사진';
+
+  const pf = (await load('portfolio.json', [])).filter(x => x.title);
+  $('portfolio').innerHTML = pf.length ? pf.map(x => `
+    <article>
+      ${x.image ? `<img src="${escape(x.image)}" alt="" loading="lazy">` : ''}
+      <div class="body">
+        <div class="meta"><span class="chip">${escape(x.type)}</span><span>${escape(x.date)}</span></div>
+        <h3>${x.link ? `<a href="${escape(x.link)}">${escape(x.title)} ↗</a>` : escape(x.title)}</h3>
+        <p>${escape(x.desc)}</p>
+      </div>
+    </article>`).join('') : '<p class="empty">곧 강의 기록이 채워질 예정입니다.</p>';
+
+  const feed = await load('feed.json', { items: [] });
+  if (feed.updated) $('updated').textContent = new Date(feed.updated).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' }) + ' 갱신';
+  const render = f => {
+    const items = feed.items.filter(x => f === 'all' || x.source === f);
+    $('feed').innerHTML = items.length ? items.map(x => `
+      <a href="${escape(x.link)}" target="_blank" rel="noopener">
+        ${x.image ? `<img class="thumb" src="${escape(x.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+        <div class="txt">
+          <div class="meta"><b class="src-${x.source}">${SRC[x.source]}</b><span>${x.date ? new Date(x.date).toLocaleDateString('ko-KR') : ''}</span></div>
+          <h3>${escape(x.title)}</h3><p>${escape(x.summary)}</p>
+        </div>
+      </a>`).join('') : '<p class="empty">아직 연동된 글이 없어요.</p>';
+  };
+  $('filters').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    [...$('filters').children].forEach(x => x.classList.toggle('on', x === b));
+    render(b.dataset.f);
+  };
+  render('all');
+})();
+</script>
+</body>
+</html>

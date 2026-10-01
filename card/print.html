@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>황혜인 명함 인쇄용 (90×50mm)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+  /* 한국 표준 명함 90×50mm. 인쇄소 요청 시 재단 여백(각 1~2mm)을 더해주세요. */
+  @page { size: 90mm 50mm; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard Variable', Pretendard, sans-serif; color: #1f1a17; background: #ddd; }
+  .card { width: 90mm; height: 50mm; background: #f6f1ea; position: relative; overflow: hidden;
+          page-break-after: always; margin: 8mm auto; }
+  @media print { body { background: none; } .card { margin: 0; } }
+
+  .front { padding: 7mm 7mm 6mm; display: flex; flex-direction: column; }
+  .front .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 2.2mm; background: #b4532a; }
+  .front .role { font-size: 7.5pt; color: #b4532a; font-weight: 600; letter-spacing: .02em; }
+  .front .name { font: 700 17pt/1.2 'Noto Serif KR', serif; letter-spacing: -.02em; margin-top: 1.2mm; }
+  .front .name small { font: 500 7pt 'Pretendard Variable', sans-serif; color: #6f655d; margin-left: 2mm; letter-spacing: .05em; }
+  .front ul { list-style: none; margin-top: auto; font-size: 7.3pt; line-height: 1.7; }
+  .front ul b { display: inline-block; width: 9mm; color: #6f655d; font-weight: 500; }
+  .front .logo { position: absolute; right: 7mm; top: 7mm; font: 700 7pt 'Pretendard Variable'; letter-spacing: .25em; color: #6f655d; }
+
+  .back { background: #1f1a17; color: #f6f1ea; display: flex; align-items: center; gap: 5mm; padding: 6mm 7mm; }
+  .back .qr { width: 30mm; height: 30mm; background: #fff; border-radius: 1.5mm; padding: 1mm; flex: none; }
+  .back .qr img { width: 100%; height: 100%; display: block; }
+  .back .hello { font: 500 8.6pt/1.55 'Noto Serif KR', serif; }
+  .back .hello b { color: #e9a07a; font-weight: 700; }
+  .back .scan { margin-top: 2.5mm; font-size: 6.3pt; line-height: 1.55; color: #c9bdb1; }
+</style>
+</head>
+<body>
+  <!-- 앞면 -->
+  <div class="card front">
+    <div class="bar"></div>
+    <div class="logo">PHASE0</div>
+    <p class="role">브랜드 스토리텔러 · 강사</p>
+    <p class="name">황혜인<small>HWANG HYEIN</small></p>
+    <ul>
+      <li><b>M</b><span id="phone">010-0000-0000</span></li>
+      <li><b>E</b><span id="email">email@example.com</span></li>
+      <li><b>W</b>phase0.shop</li>
+    </ul>
+  </div>
+
+  <!-- 뒷면 -->
+  <div class="card back">
+    <div class="qr"><img src="qr/card.svg" alt="QR"></div>
+    <div>
+      <p class="hello">안녕하세요,<br><b>브랜드 스토리텔러</b><br>황혜인 강사입니다.</p>
+      <p class="scan">휴대폰 카메라로 찍으면<br>연락처 저장 · 카카오톡 · 리멤버 명함<br>포트폴리오 · 블로그를 한 번에</p>
+    </div>
+  </div>
+
+<script>
+  // profile.json 의 전화·이메일을 앞면에 반영
+  fetch('profile.json').then(r => r.json()).then(p => {
+    if (p.phone && !p.phone.includes('TODO')) document.getElementById('phone').textContent = p.phone;
+    if (p.email && !p.email.includes('TODO')) document.getElementById('email').textContent = p.email;
+  }).catch(() => {});
+</script>
+</body>
+</html>
