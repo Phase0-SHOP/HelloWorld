@@ -8,7 +8,12 @@
   "org": "PHASE0",
   "greeting": "안녕하세요, 브랜드 스토리텔러 황혜인 강사입니다.",
   "intro": "브랜드가 가진 이야기를 찾아, 사람에게 닿는 언어로 바꾸는 일을 합니다. 강의와 워크숍으로 그 방법을 나눕니다.",
-  "topics": ["브랜드 스토리텔링", "퍼스널 브랜딩", "콘텐츠 기획", "AI 활용 글쓰기"],
+  "topics": [
+    "브랜드 스토리텔링",
+    "퍼스널 브랜딩",
+    "콘텐츠 기획",
+    "AI 활용 글쓰기"
+  ],
   "phone": "TODO-010-0000-0000",
   "email": "TODO@example.com",
   "website": "https://phase0.shop",
@@ -24,5 +29,69 @@
     "naverBlogId": "",
     "tistoryId": "",
     "threadsToken": "토큰은 여기 말고 서버 환경변수 THREADS_TOKEN 에 넣으세요"
-  }
+  },
+  "buttons": [
+    {
+      "label": "연락처 저장하기",
+      "sub": "전화·이메일·SNS가 한 번에 저장돼요",
+      "url": "contact.vcf",
+      "icon": "👤",
+      "style": "accent"
+    },
+    {
+      "label": "카카오톡으로 강의 문의",
+      "sub": "가장 빠르게 답변드려요",
+      "url": "{kakao}",
+      "icon": "💬",
+      "style": "kakao"
+    },
+    {
+      "group": "강의 · 협업"
+    },
+    {
+      "label": "강의 문의 메일 보내기",
+      "url": "mailto:{email}?subject=[강의 문의] ",
+      "icon": "✉️"
+    },
+    {
+      "label": "강의·프로젝트 포트폴리오",
+      "url": "#portfolio-sec",
+      "icon": "📂"
+    },
+    {
+      "label": "리멤버 명함 받기",
+      "url": "{remember}",
+      "icon": "🪪"
+    },
+    {
+      "group": "황혜인의 이야기"
+    },
+    {
+      "label": "PHASE0 홈페이지",
+      "sub": "phase0.shop",
+      "url": "{website}",
+      "icon": "🌐"
+    },
+    {
+      "label": "네이버 블로그",
+      "url": "{naverBlog}",
+      "icon": "📝"
+    },
+    {
+      "label": "티스토리",
+      "url": "{tistory}",
+      "icon": "📰"
+    },
+    {
+      "label": "스레드",
+      "url": "{threads}",
+      "icon": "🧵"
+    },
+    {
+      "label": "최근 글 모아보기",
+      "url": "#posts",
+      "icon": "🔔"
+    }
+  ],
+  "_버튼안내": "buttons 순서대로 링크트리처럼 쌓입니다. {kakao} 같은 자리표시는 links 값으로 채워지고, 값이 비어 있으면 그 버튼은 자동으로 숨겨집니다. {\"group\": \"제목\"} 은 묶음 제목입니다."
 }

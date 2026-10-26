@@ -42,18 +42,30 @@
   .tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px; }
   .tags span { font-size: 12.5px; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); }
 
-  .save { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
-          margin: 28px 0 8px; padding: 16px; border-radius: 14px; background: var(--ink);
-          color: var(--paper); font-weight: 700; font-size: 16px; }
+  .links .hint { margin: -4px 0 4px; }
   .hint { text-align: center; font-size: 12.5px; color: var(--muted); min-height: 1em; }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-  .btn { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 14px;
-         background: var(--card); border: 1px solid var(--line); font-weight: 600; font-size: 14.5px; }
-  .btn svg { width: 20px; height: 20px; flex: none; }
-  .btn.kakao { background: var(--kakao); color: #191600; border-color: transparent; }
-  .btn.wide { grid-column: 1 / -1; justify-content: center; }
-  .btn[hidden] { display: none; }
+  .socials { display: flex; justify-content: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .socials a { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+               background: var(--card); border: 1px solid var(--line); font-weight: 800; font-size: 14px; }
+  .socials svg { width: 18px; height: 18px; }
+
+  .links { display: grid; gap: 12px; margin-top: 24px; }
+  .links .group { font: 700 13px var(--sans); color: var(--muted); text-align: center; margin: 14px 0 -2px; letter-spacing: .02em; }
+  .link { position: relative; display: flex; align-items: center; justify-content: center; min-height: 60px;
+          padding: 12px 56px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+          font-weight: 600; font-size: 15px; text-align: center; line-height: 1.4;
+          box-shadow: 0 1px 0 var(--line); transition: transform .15s ease, box-shadow .15s ease; }
+  .link:active { transform: scale(.98); }
+  @media (hover: hover) { .link:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.08); } }
+  .link .ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px;
+               border-radius: 10px; display: grid; place-items: center; font-size: 20px; overflow: hidden; }
+  .link .ico img { width: 100%; height: 100%; object-fit: cover; }
+  .link small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+  .link.kakao { background: var(--kakao); color: #191600; border-color: transparent; }
+  .link.kakao small { color: #5b5200; }
+  .link.accent { background: var(--accent); color: #fff; border-color: transparent; }
+  .link.accent small { color: #fbe3d6; }
 
   section { margin-top: 44px; }
   h2 { font: 700 19px var(--serif); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; }
@@ -97,27 +109,12 @@
     <p class="role" id="role">브랜드 스토리텔러 · 강사</p>
     <p class="intro" id="intro"></p>
     <div class="tags" id="tags"></div>
+    <nav class="socials" id="socials" aria-label="SNS·연락처"></nav>
   </header>
 
-  <a class="save" id="save" href="contact.vcf">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M19 8v6M16 11h6"/></svg>
-    <span>연락처 저장하기</span>
-  </a>
-  <p class="hint" id="hint"></p>
 
-  <div class="grid">
-    <a class="btn kakao wide" id="kakao" hidden>
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.5 3 2 6.5 2 10.8c0 2.8 1.9 5.2 4.7 6.6l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.5 10-7.9S17.5 3 12 3z"/></svg>
-      카카오톡으로 문의하기
-    </a>
-    <a class="btn" id="call" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>전화</a>
-    <a class="btn" id="sms" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>문자</a>
-    <a class="btn" id="mail" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>이메일</a>
-    <a class="btn" id="web" href="https://phase0.shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>phase0.shop</a>
-    <a class="btn" id="naverBlog" hidden><b class="src-naver">N</b>네이버 블로그</a>
-    <a class="btn" id="tistory" hidden><b class="src-tistory">T</b>티스토리</a>
-    <a class="btn" id="threads" hidden><b class="src-threads">@</b>스레드</a>
-  </div>
+  <div class="links" id="links"></div>
+  <p class="hint" id="hint"></p>
 
   <section id="rememberSec" hidden>
     <h2>리멤버 명함 <small>탭하면 리멤버에서 열려요</small></h2>
@@ -127,12 +124,12 @@
     </a>
   </section>
 
-  <section>
+  <section id="portfolio-sec">
     <h2>포트폴리오 <small>강의 · 프로젝트 기록</small></h2>
     <div class="pf" id="portfolio"><p class="empty">포트폴리오를 불러오는 중…</p></div>
   </section>
 
-  <section>
+  <section id="posts">
     <h2>최근 글 <small id="updated"></small></h2>
     <div class="filters" id="filters">
       <button class="on" data-f="all">전체</button>
@@ -152,6 +149,11 @@
 const $ = id => document.getElementById(id);
 const real = v => v && !String(v).includes('TODO');
 const escape = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICONS = {
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>',
+  web: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>',
+};
 const SRC = { naver: '네이버 블로그', tistory: '티스토리', threads: '스레드' };
 
 // 아이폰 / 안드로이드 판별 (?os=ios|android 로 강제 가능)
@@ -173,7 +175,6 @@ async function load(path, fallback) {
 
 (async () => {
   $('hint').textContent = HINTS[os];
-  if (os === 'android') $('save').setAttribute('download', '황혜인_연락처.vcf');
 
   const p = await load('profile.json', null);
   if (p) {
@@ -183,11 +184,28 @@ async function load(path, fallback) {
     $('intro').textContent = p.intro;
     $('tags').innerHTML = (p.topics || []).map(t => `<span>${escape(t)}</span>`).join('');
     const L = p.links || {};
-    link('kakao', L.kakao);
-    if (real(p.phone)) { link('call', 'tel:' + p.phone.replace(/[^\d+]/g, '')); link('sms', 'sms:' + p.phone.replace(/[^\d+]/g, '')); }
-    if (real(p.email)) link('mail', 'mailto:' + p.email);
-    link('web', p.website);
-    ['naverBlog', 'tistory', 'threads'].forEach(k => link(k, L[k]));
+    const tel = real(p.phone) ? p.phone.replace(/[^\d+]/g, '') : '';
+    const vars = { ...L, phone: tel, email: real(p.email) ? p.email : '', website: p.website };
+    // {kakao} 같은 자리표시를 profile.json 의 실제 값으로 바꾸고, 값이 비어 있으면 버튼을 숨김
+    const fill = u => { let ok = true; const out = String(u || '').replace(/\{(\w+)\}/g, (_, k) => real(vars[k]) ? vars[k] : (ok = false, '')); return ok && real(out) ? out : ''; };
+    const ext = u => /^https?:/.test(u) ? ' target="_blank" rel="noopener"' : '';
+
+    $('socials').innerHTML = [
+      ['tel:{phone}', '전화', ICONS.phone], ['mailto:{email}', '이메일', ICONS.mail],
+      ['{naverBlog}', '네이버 블로그', '<b class="src-naver">N</b>'], ['{tistory}', '티스토리', '<b class="src-tistory">T</b>'],
+      ['{threads}', '스레드', '<b class="src-threads">@</b>'], ['{website}', 'phase0.shop', ICONS.web],
+    ].map(([u, label, ico]) => { const h = fill(u); return h ? `<a href="${escape(h)}" aria-label="${label}" title="${label}"${ext(h)}>${ico}</a>` : ''; }).join('');
+
+    $('links').innerHTML = (p.buttons || []).map(b => {
+      if (b.group) return `<p class="group">${escape(b.group)}</p>`;
+      const h = fill(b.url); if (!h) return '';
+      const ico = b.image ? `<img src="${escape(b.image)}" alt="">` : escape(b.icon || '');
+      return `<a class="link ${escape(b.style || '')}" href="${escape(h)}"${ext(h)}>
+        ${ico ? `<span class="ico">${ico}</span>` : ''}
+        <span>${escape(b.label)}${b.sub ? `<small>${escape(b.sub)}</small>` : ''}</span></a>`;
+    }).join('').replace(/(<p class="group">[^<]*<\/p>)(?=<p class="group">|$)/g, '');
+    if (os === 'android') $('links').querySelectorAll('a[href$=".vcf"]').forEach(a => a.setAttribute('download', '황혜인_연락처.vcf'));
+    const vcf = $('links').querySelector('a[href$=".vcf"]'); if (vcf) vcf.after($('hint'));
     if (real(L.remember)) { $('remember').href = L.remember; $('rememberSec').hidden = false; }
   }
   const img = new Image();
