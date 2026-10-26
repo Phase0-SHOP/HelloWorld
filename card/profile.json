@@ -54,6 +54,12 @@
       "icon": "✉️"
     },
     {
+      "label": "강의 프로그램 · 커리큘럼",
+      "sub": "대상별 과정과 차시 구성",
+      "url": "#courses-sec",
+      "icon": "🎓"
+    },
+    {
       "label": "강의·프로젝트 포트폴리오",
       "url": "#portfolio-sec",
       "icon": "📂"

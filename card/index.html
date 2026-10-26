@@ -67,6 +67,23 @@
   .link.accent { background: var(--accent); color: #fff; border-color: transparent; }
   .link.accent small { color: #fbe3d6; }
 
+  .courses { display: grid; gap: 12px; }
+  .course { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 16px; }
+  .course h3 { font: 700 17px/1.4 var(--serif); margin: 8px 0 2px; }
+  .course .dur { font-size: 12.5px; color: var(--muted); }
+  .course > p { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .course details { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .course summary { cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--accent); list-style: none; }
+  .course summary::-webkit-details-marker { display: none; }
+  .course summary::after { content: ' ▾'; }
+  .course details[open] summary::after { content: ' ▴'; }
+  .course ol { margin: 10px 0 0; padding: 0; list-style: none; counter-reset: s; }
+  .course li { counter-increment: s; display: flex; gap: 10px; font-size: 14px; padding: 6px 0; }
+  .course li::before { content: counter(s, decimal-leading-zero); font: 700 12px var(--sans); color: var(--accent);
+                       background: var(--accent-soft); border-radius: 6px; padding: 2px 6px; height: fit-content; }
+  .course .ask { display: block; margin-top: 14px; text-align: center; padding: 11px; border-radius: 12px;
+                 background: var(--ink); color: var(--paper); font-weight: 700; font-size: 14px; }
+
   section { margin-top: 44px; }
   h2 { font: 700 19px var(--serif); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; }
   h2 small { font: 400 12px var(--sans); color: var(--muted); }
@@ -115,6 +132,11 @@
 
   <div class="links" id="links"></div>
   <p class="hint" id="hint"></p>
+
+  <section id="courses-sec">
+    <h2>강의 프로그램 <small>기관·기업 맞춤 조정 가능</small></h2>
+    <div class="courses" id="courses"><p class="empty">강의 프로그램을 불러오는 중…</p></div>
+  </section>
 
   <section id="rememberSec" hidden>
     <h2>리멤버 명함 <small>탭하면 리멤버에서 열려요</small></h2>
@@ -222,6 +244,20 @@ async function load(path, fallback) {
         <p>${escape(x.desc)}</p>
       </div>
     </article>`).join('') : '<p class="empty">곧 강의 기록이 채워질 예정입니다.</p>';
+
+  // 강의 문의 버튼: 카카오톡 > 이메일 순으로 연결
+  const askUrl = p && real(p.links?.kakao) ? p.links.kakao : p && real(p.email) ? 'mailto:' + p.email : '';
+  const cs = (await load('curriculum.json', [])).filter(x => x.title);
+  $('courses').innerHTML = cs.length ? cs.map(c => `
+    <article class="course">
+      <div class="meta"><span class="chip">${escape(c.tag)}</span></div>
+      <h3>${escape(c.title)}</h3>
+      <p class="dur">${escape(c.duration)}</p>
+      <p>${escape(c.summary)}</p>
+      ${c.sessions?.length ? `<details><summary>커리큘럼 ${c.sessions.length}차시 보기</summary>
+        <ol>${c.sessions.map(x => `<li><span>${escape(x)}</span></li>`).join('')}</ol></details>` : ''}
+      ${askUrl ? `<a class="ask" href="${escape(askUrl.startsWith('mailto:') ? askUrl + '?subject=' + encodeURIComponent('[강의 문의] ' + c.title) : askUrl)}"${/^https?:/.test(askUrl) ? ' target="_blank" rel="noopener"' : ''}>이 강의 문의하기</a>` : ''}
+    </article>`).join('') : '<p class="empty">강의 프로그램을 준비 중입니다.</p>';
 
   const feed = await load('feed.json', { items: [] });
   if (feed.updated) $('updated').textContent = new Date(feed.updated).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' }) + ' 갱신';
